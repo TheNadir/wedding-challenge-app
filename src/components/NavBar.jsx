@@ -1,53 +1,79 @@
-import { Link, useNavigate } from 'react-router-dom'
-import { supabase } from '../lib/supabase'
+import { NavLink } from 'react-router-dom'
+import { useAuth } from '../hooks/useAuth'
+import styles from './NavBar.module.css'
 
 /**
  * NavBar — persistent top navigation shown on all protected pages.
- * Placeholder — styled in a later step.
+ *
+ * Left side  : app name / logo
+ * Right side : user avatar + display name + sign-out button
  */
 export default function NavBar() {
-  const navigate = useNavigate()
+  const { user, signOut } = useAuth()
 
-  async function handleSignOut() {
-    await supabase.auth.signOut()
-    navigate('/')
-  }
+  const avatarUrl = user?.user_metadata?.avatar_url
+  const displayName = user?.user_metadata?.full_name
+    ?? user?.user_metadata?.name
+    ?? user?.email
+    ?? 'Guest'
+
+  // Show just the first name so it fits on mobile.
+  const firstName = displayName.split(' ')[0]
 
   return (
-    <nav style={styles.nav}>
-      <Link to="/challenges" style={styles.link}>
-        Challenges
-      </Link>
-      <Link to="/leaderboard" style={styles.link}>
-        Leaderboard
-      </Link>
-      <button onClick={handleSignOut} style={styles.button}>
-        Sign out
-      </button>
-    </nav>
-  )
-}
+    <header className={styles.header}>
+      {/* ── Brand ─────────────────────────────────────────────────── */}
+      <NavLink to="/challenges" className={styles.brand}>
+        <span aria-hidden="true">💍</span>
+        <span className={styles.brandName}>Wedding Challenges</span>
+      </NavLink>
 
-const styles = {
-  nav: {
-    display: 'flex',
-    gap: '1rem',
-    padding: '0.75rem 1rem',
-    background: '#7c3aed',
-    alignItems: 'center',
-  },
-  link: {
-    color: '#ffffff',
-    textDecoration: 'none',
-    fontWeight: 600,
-  },
-  button: {
-    marginLeft: 'auto',
-    background: 'transparent',
-    border: '1px solid #ffffff',
-    color: '#ffffff',
-    padding: '0.25rem 0.75rem',
-    borderRadius: 4,
-    cursor: 'pointer',
-  },
+      {/* ── Nav links (hidden on very small screens, shown on ≥ 400px) ── */}
+      <nav className={styles.nav} aria-label="Main navigation">
+        <NavLink
+          to="/challenges"
+          className={({ isActive }) =>
+            [styles.navLink, isActive ? styles.navLinkActive : ''].join(' ')
+          }
+        >
+          Challenges
+        </NavLink>
+        <NavLink
+          to="/leaderboard"
+          className={({ isActive }) =>
+            [styles.navLink, isActive ? styles.navLinkActive : ''].join(' ')
+          }
+        >
+          Leaderboard
+        </NavLink>
+      </nav>
+
+      {/* ── User info + sign-out ───────────────────────────────────── */}
+      <div className={styles.userArea}>
+        {avatarUrl ? (
+          <img
+            src={avatarUrl}
+            alt={displayName}
+            className={styles.avatar}
+            referrerPolicy="no-referrer"
+          />
+        ) : (
+          <div className={styles.avatarFallback} aria-hidden="true">
+            {firstName[0].toUpperCase()}
+          </div>
+        )}
+
+        <span className={styles.name}>{firstName}</span>
+
+        <button
+          onClick={signOut}
+          className={styles.signOutBtn}
+          type="button"
+          aria-label="Sign out"
+        >
+          Sign out
+        </button>
+      </div>
+    </header>
+  )
 }

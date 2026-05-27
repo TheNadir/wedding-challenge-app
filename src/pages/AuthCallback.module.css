@@ -1,0 +1,29 @@
+/* AuthCallback — full-screen loading state shown while the OAuth code is exchanged */
+
+.page {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100dvh;
+  gap: 1.25rem;
+  background: linear-gradient(135deg, #f3e8ff 0%, #ede9fe 100%);
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.spinner {
+  width: 48px;
+  height: 48px;
+  border: 4px solid #e9d5ff;
+  border-top-color: #7c3aed;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+.text {
+  font-size: 1rem;
+  color: #6b7280;
+}

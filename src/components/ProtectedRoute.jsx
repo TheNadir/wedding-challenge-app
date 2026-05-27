@@ -1,5 +1,6 @@
 import { Navigate } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
+import styles from './ProtectedRoute.module.css'
 
 /**
  * ProtectedRoute — wraps a page component and redirects unauthenticated
@@ -15,8 +16,8 @@ export default function ProtectedRoute({ children }) {
 
   if (loading) {
     return (
-      <div style={styles.center}>
-        <div style={styles.spinner} aria-label="Loading…" />
+      <div className={styles.center}>
+        <div className={styles.spinner} aria-label="Loading…" />
       </div>
     )
   }
@@ -26,22 +27,4 @@ export default function ProtectedRoute({ children }) {
   }
 
   return children
-}
-
-const styles = {
-  center: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    height: '100dvh',
-    background: '#ffffff',
-  },
-  spinner: {
-    width: 40,
-    height: 40,
-    border: '4px solid #e9d5ff',
-    borderTopColor: '#7c3aed',
-    borderRadius: '50%',
-    animation: 'spin 0.8s linear infinite',
-  },
 }
