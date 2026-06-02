@@ -1,0 +1,206 @@
+/* ChallengeCard — single challenge entry, two visual states: incomplete & complete */
+
+/* ── Shared base ─────────────────────────────────────────────────────────── */
+.card {
+  position: relative;
+  border-radius: 16px;
+  overflow: hidden;
+  /* Generous shadow so cards feel tactile */
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08), 0 0 0 1px rgba(0, 0, 0, 0.06);
+  /* Make sure tap targets are big enough */
+  min-height: 120px;
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+/* ── Incomplete state ────────────────────────────────────────────────────── */
+.cardIncomplete {
+  background: #f9fafb;
+  border: 2px solid #e5e7eb;
+  cursor: pointer;
+  /* Center the mystery content vertically */
+  justify-content: center;
+  align-items: center;
+  min-height: 140px;
+}
+
+.cardIncomplete:hover,
+.cardIncomplete:focus-visible {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(124, 58, 237, 0.15), 0 0 0 2px rgba(124, 58, 237, 0.3);
+  outline: none;
+}
+
+.cardIncomplete:active {
+  transform: translateY(0);
+}
+
+/* ── Complete state ──────────────────────────────────────────────────────── */
+.cardComplete {
+  background: #f0fdf4;
+  border: 2px solid #bbf7d0;
+  cursor: default;
+}
+
+/* ── Sort-order badge (top-left corner) ─────────────────────────────────── */
+.orderBadge {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  /* Circle big enough for 2-digit numbers */
+  min-width: 28px;
+  height: 28px;
+  padding: 0 6px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-weight: 700;
+  line-height: 1;
+  /* Neutral tones that work on both card backgrounds */
+  background: rgba(0, 0, 0, 0.08);
+  color: #374151;
+  z-index: 1;
+}
+
+.cardComplete .orderBadge {
+  background: rgba(22, 163, 74, 0.15);
+  color: #15803d;
+}
+
+/* ── Checkmark badge (top-right corner, completed cards only) ───────────── */
+.checkBadge {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: #16a34a;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1;
+  box-shadow: 0 1px 4px rgba(22, 163, 74, 0.4);
+}
+
+/* ── Photo thumbnail (completed cards) ──────────────────────────────────── */
+.thumbnail {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+  display: block;
+  /* Slight dim so the green tint reads better */
+  opacity: 0.92;
+}
+
+/* ── Text content area ───────────────────────────────────────────────────── */
+.textContent {
+  padding: 1rem 1rem 1.125rem;
+  /* Leave room for the order badge */
+  padding-top: 1.25rem;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+/* Incomplete cards: center everything */
+.cardIncomplete .textContent {
+  align-items: center;
+  text-align: center;
+  padding-top: 1rem;
+}
+
+/* Completed cards: extra top padding to clear the badges */
+.cardComplete .textContent {
+  padding-top: 1rem;
+}
+
+/* ── Challenge title (completed) ─────────────────────────────────────────── */
+.title {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: #14532d;
+  line-height: 1.3;
+  /* Leave room for sort badge + check badge */
+  padding-right: 2.25rem;
+  padding-left: 1.75rem;
+}
+
+/* ── Challenge description (completed) ──────────────────────────────────── */
+.description {
+  font-size: 0.9375rem;
+  color: #166534;
+  line-height: 1.55;
+  opacity: 0.85;
+}
+
+/* ── Mystery title ── the "???" ─────────────────────────────────────────── */
+.mysteryTitle {
+  font-size: 2.75rem;
+  font-weight: 900;
+  color: #7c3aed;
+  letter-spacing: 0.15em;
+  /* Gentle breathing animation — intriguing, not annoying */
+  animation: mysteryBreathe 3s ease-in-out infinite;
+  /* Pull left padding since we're centered */
+  padding: 0;
+}
+
+@keyframes mysteryBreathe {
+  0%, 100% {
+    opacity: 0.55;
+    letter-spacing: 0.1em;
+  }
+  50% {
+    opacity: 1;
+    letter-spacing: 0.3em;
+  }
+}
+
+/* ── CTA row (camera icon + text) ───────────────────────────────────────── */
+.cta {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #6b7280;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.cameraIcon {
+  flex-shrink: 0;
+  color: #7c3aed;
+}
+
+/* ── Screen-reader only text ─────────────────────────────────────────────── */
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ── Larger screens ──────────────────────────────────────────────────────── */
+@media (min-width: 480px) {
+  .thumbnail {
+    height: 240px;
+  }
+
+  .mysteryTitle {
+    font-size: 3.25rem;
+  }
+
+  .title {
+    font-size: 1.25rem;
+  }
+}
