@@ -1,6 +1,7 @@
-import { NavLink } from 'react-router-dom'
-import { useAuth } from '../hooks/useAuth'
-import styles from './NavBar.module.css'
+import { NavLink } from "react-router-dom";
+import { useAuth } from "../hooks/useAuth";
+import { useFeatureFlags } from "../context/FeatureFlagsContext";
+import styles from "./NavBar.module.css";
 
 /**
  * NavBar — persistent top navigation shown on all protected pages.
@@ -9,16 +10,20 @@ import styles from './NavBar.module.css'
  * Right side : user avatar + display name + sign-out button
  */
 export default function NavBar() {
-  const { user, signOut } = useAuth()
+  const { user, signOut } = useAuth();
+  const { flags } = useFeatureFlags();
 
-  const avatarUrl = user?.user_metadata?.avatar_url
-  const displayName = user?.user_metadata?.full_name
-    ?? user?.user_metadata?.name
-    ?? user?.email
-    ?? 'Guest'
+  const avatarUrl = user?.user_metadata?.avatar_url;
+  const displayName =
+    user?.user_metadata?.full_name ??
+    user?.user_metadata?.name ??
+    user?.email ??
+    "Guest";
 
   // Show just the first name so it fits on mobile.
-  const firstName = displayName.split(' ')[0]
+  const firstName = displayName.split(" ")[0];
+
+  console.log("flags ==>", flags);
 
   return (
     <header className={styles.header}>
@@ -33,7 +38,7 @@ export default function NavBar() {
         <NavLink
           to="/challenges"
           className={({ isActive }) =>
-            [styles.navLink, isActive ? styles.navLinkActive : ''].join(' ')
+            [styles.navLink, isActive ? styles.navLinkActive : ""].join(" ")
           }
         >
           Challenges
@@ -41,11 +46,21 @@ export default function NavBar() {
         <NavLink
           to="/leaderboard"
           className={({ isActive }) =>
-            [styles.navLink, isActive ? styles.navLinkActive : ''].join(' ')
+            [styles.navLink, isActive ? styles.navLinkActive : ""].join(" ")
           }
         >
           Leaderboard
         </NavLink>
+        {flags.camera_roll && (
+          <NavLink
+            to="/camera-roll"
+            className={({ isActive }) =>
+              [styles.navLink, isActive ? styles.navLinkActive : ""].join(" ")
+            }
+          >
+            Disposable Camera
+          </NavLink>
+        )}
       </nav>
 
       {/* ── User info + sign-out ───────────────────────────────────── */}
@@ -75,5 +90,5 @@ export default function NavBar() {
         </button>
       </div>
     </header>
-  )
+  );
 }

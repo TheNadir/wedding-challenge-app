@@ -1,13 +1,16 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import { FeatureFlagsProvider } from './context/FeatureFlagsContext'
 import ProtectedRoute from './components/ProtectedRoute'
 import Login from './pages/Login'
 import AuthCallback from './pages/AuthCallback'
 import Challenges from './pages/Challenges'
 import Upload from './pages/Upload'
 import Leaderboard from './pages/Leaderboard'
+import CameraRoll from './pages/CameraRoll'
 
 export default function App() {
   return (
+    <FeatureFlagsProvider>
     <BrowserRouter>
       <Routes>
         {/* Public */}
@@ -40,9 +43,19 @@ export default function App() {
           }
         />
 
+        <Route
+          path="/camera-roll"
+          element={
+            <ProtectedRoute>
+              <CameraRoll />
+            </ProtectedRoute>
+          }
+        />
+
         {/* Fallback */}
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>
+    </FeatureFlagsProvider>
   )
 }
