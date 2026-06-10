@@ -34,8 +34,9 @@ export default function Login() {
   return (
     <div className={styles.page}>
       <div className={styles.card}>
-        <div className={styles.emoji} aria-hidden="true">💍</div>
-        <h1 className={styles.heading}>Wedding Challenges</h1>
+        <img src="/icons/homescreen_icon.png" alt="" className={styles.logo} aria-hidden="true" />
+        <h1 className={styles.coupleNames}>Neha &amp; Sean</h1>
+        <h2 className={styles.heading}>Wedding Challenges</h2>
         <p className={styles.tagline}>
           Sign in to start completing challenges
         </p>

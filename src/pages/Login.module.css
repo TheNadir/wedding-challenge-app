@@ -43,10 +43,21 @@
   max-width: 380px;
 }
 
-.emoji {
-  font-size: 3rem;
-  line-height: 1;
+.logo {
+  width: 80px;
+  height: 80px;
+  object-fit: contain;
   margin-bottom: 1rem;
+  border-radius: 16px;
+}
+
+.coupleNames {
+  font-family: 'Darleston', cursive;
+  font-size: 2.75rem;
+  font-weight: 400;
+  color: #4c1d95;
+  line-height: 1.1;
+  margin: 0 0 0.25rem;
 }
 
 .heading {
