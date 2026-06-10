@@ -2,7 +2,6 @@ import { useState, useCallback, useEffect } from 'react'
 import { supabase } from '../lib/supabase'
 
 const MAX_BYTES = 10 * 1024 * 1024 // 10 MB
-const SIGNED_URL_TTL = 3600 // 1 hour
 
 export function useCameraRoll(userId) {
   // ── Upload state ───────────────────────────────────────────────────────────
@@ -11,51 +10,32 @@ export function useCameraRoll(userId) {
   const [uploadError, setUploadError]     = useState(null)
   const [uploadSuccess, setUploadSuccess] = useState(false)
 
-  // ── Gallery state ──────────────────────────────────────────────────────────
-  const [photos, setPhotos]               = useState([])
-  const [photosLoading, setPhotosLoading] = useState(true)
-  const [photosError, setPhotosError]     = useState(null)
+  // ── Photo count state ──────────────────────────────────────────────────────
+  const [photoCount, setPhotoCount]       = useState(0)
+  const [countLoading, setCountLoading]   = useState(true)
 
-  // ── Fetch gallery ──────────────────────────────────────────────────────────
-  const refetchPhotos = useCallback(async () => {
+  // ── Fetch count (list only, no signed URLs) ────────────────────────────────
+  const refetchCount = useCallback(async () => {
     if (!userId) return
-    setPhotosLoading(true)
-    setPhotosError(null)
+    setCountLoading(true)
 
     try {
-      const { data: files, error: listError } = await supabase.storage
+      const { data: files, error } = await supabase.storage
         .from('camera_roll')
-        .list(userId, { sortBy: { column: 'name', order: 'desc' } })
+        .list(userId)
 
-      if (listError) throw listError
-      if (!files || files.length === 0) {
-        setPhotos([])
-        return
-      }
-
-      const paths = files.map(f => `${userId}/${f.name}`)
-
-      const { data: signed, error: signError } = await supabase.storage
-        .from('camera_roll')
-        .createSignedUrls(paths, SIGNED_URL_TTL)
-
-      if (signError) throw signError
-
-      const validPhotos = (signed ?? [])
-        .filter(item => item.signedUrl)
-        .map(item => ({ path: item.path, signedUrl: item.signedUrl }))
-
-      setPhotos(validPhotos)
-    } catch (err) {
-      setPhotosError(err.message ?? 'Failed to load photos.')
+      if (error) throw error
+      setPhotoCount(files?.length ?? 0)
+    } catch {
+      // Non-critical — count stays at previous value
     } finally {
-      setPhotosLoading(false)
+      setCountLoading(false)
     }
   }, [userId])
 
   useEffect(() => {
-    refetchPhotos()
-  }, [refetchPhotos])
+    refetchCount()
+  }, [refetchCount])
 
   // ── Upload ─────────────────────────────────────────────────────────────────
   const upload = useCallback(async (file) => {
@@ -119,13 +99,13 @@ export function useCameraRoll(userId) {
 
       setProgress(100)
       setUploadSuccess(true)
-      await refetchPhotos()
+      setPhotoCount((c) => c + 1)
     } catch (err) {
       setUploadError(err.message ?? 'Something went wrong. Please try again.')
     } finally {
       setUploading(false)
     }
-  }, [userId, refetchPhotos])
+  }, [userId])
 
   const resetUpload = useCallback(() => {
     setUploading(false)
@@ -136,6 +116,6 @@ export function useCameraRoll(userId) {
 
   return {
     upload, uploading, progress, uploadError, uploadSuccess, resetUpload,
-    photos, photosLoading, photosError, refetchPhotos,
+    photoCount, countLoading,
   }
 }
