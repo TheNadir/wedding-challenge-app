@@ -2,19 +2,15 @@ import NavBar from "../components/NavBar";
 import ChallengeCard from "../components/ChallengeCard";
 import { useAuth } from "../hooks/useAuth";
 import { useChallenges } from "../hooks/useChallenges";
+import { useFeatureFlags } from "../context/FeatureFlagsContext";
 import styles from "./Challenges.module.css";
 
 /** Number of skeleton cards to show while loading. */
 const SKELETON_COUNT = 6;
 
-/**
- * Challenges — the main challenge-list page.
- *
- * Shows a progress bar at the top, then a card per challenge.
- * Cards are masked as "???" until the user submits a photo for that challenge.
- */
 export default function Challenges() {
   const { user } = useAuth();
+  const { flags, loading: flagsLoading } = useFeatureFlags();
   const { challenges, submissions, loading, error, refetch } =
     useChallenges(user);
 
@@ -28,7 +24,7 @@ export default function Challenges() {
   const allDone = totalCount > 0 && completedCount === totalCount;
 
   // ── Loading skeleton ──────────────────────────────────────────────────────
-  if (loading) {
+  if (loading || flagsLoading) {
     return (
       <>
         <NavBar />
@@ -62,6 +58,24 @@ export default function Challenges() {
             <button className={styles.retryBtn} onClick={refetch} type="button">
               Try again
             </button>
+          </div>
+        </main>
+      </>
+    );
+  }
+
+  // ── Challenges disabled (ceremony in progress) ───────────────────────────
+  if (!flags.challenges_enabled) {
+    return (
+      <>
+        <NavBar />
+        <main className={styles.main}>
+          <div className={styles.ceremonyBox}>
+            <span className={styles.ceremonyIcon} aria-hidden="true">💍</span>
+            <h2 className={styles.ceremonyTitle}>Challenges are closed</h2>
+            <p className={styles.ceremonyText}>
+              Please sit back and enjoy the ceremony.
+            </p>
           </div>
         </main>
       </>

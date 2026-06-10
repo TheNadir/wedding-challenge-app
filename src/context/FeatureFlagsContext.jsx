@@ -18,7 +18,6 @@ export function FeatureFlagsProvider({ children }) {
 
         const map = {};
         for (const row of data ?? []) {
-          console.log("row ==>", row);
           map[row.key] = row.enabled;
         }
         setFlags(map);
@@ -34,6 +33,26 @@ export function FeatureFlagsProvider({ children }) {
     }
 
     fetchFlags();
+
+    // Keep flags in sync so toggling a row in Supabase takes effect immediately
+    // for users already on the page (important for ceremony mode).
+    const channel = supabase
+      .channel("feature_flags_changes")
+      .on(
+        "postgres_changes",
+        { event: "UPDATE", schema: "public", table: "feature_flags" },
+        (payload) => {
+          setFlags((prev) => ({
+            ...prev,
+            [payload.new.key]: payload.new.enabled,
+          }));
+        },
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, []);
 
   return (
