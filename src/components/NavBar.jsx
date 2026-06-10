@@ -43,15 +43,7 @@ export default function NavBar() {
         >
           Challenges
         </NavLink>
-        <NavLink
-          to="/leaderboard"
-          className={({ isActive }) =>
-            [styles.navLink, isActive ? styles.navLinkActive : ""].join(" ")
-          }
-        >
-          Leaderboard
-        </NavLink>
-        {flags.camera_roll && (
+{flags.camera_roll && (
           <NavLink
             to="/camera-roll"
             className={({ isActive }) =>

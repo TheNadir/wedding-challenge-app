@@ -5,7 +5,6 @@ import Login from './pages/Login'
 import AuthCallback from './pages/AuthCallback'
 import Challenges from './pages/Challenges'
 import Upload from './pages/Upload'
-import Leaderboard from './pages/Leaderboard'
 import CameraRoll from './pages/CameraRoll'
 
 export default function App() {
@@ -34,15 +33,6 @@ export default function App() {
             </ProtectedRoute>
           }
         />
-        <Route
-          path="/leaderboard"
-          element={
-            <ProtectedRoute>
-              <Leaderboard />
-            </ProtectedRoute>
-          }
-        />
-
         <Route
           path="/camera-roll"
           element={
