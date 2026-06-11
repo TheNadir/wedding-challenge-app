@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
 import styles from './Login.module.css'
@@ -8,11 +8,20 @@ import styles from './Login.module.css'
  *
  * - If auth is still loading, shows a full-screen spinner so there's no flash.
  * - If the user is already signed in, redirects straight to /challenges.
- * - Otherwise shows the Google sign-in card.
+ * - Otherwise shows Google sign-in and email/password options with a sign-up toggle.
  */
 export default function Login() {
-  const { user, loading, signInWithGoogle } = useAuth()
+  const { user, loading, signInWithGoogle, signInWithEmail, signUpWithEmail, resetPassword } = useAuth()
   const navigate = useNavigate()
+
+  const [mode, setMode] = useState('signin') // 'signin' | 'signup'
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
+  const [emailLoading, setEmailLoading] = useState(false)
+  const [emailError, setEmailError] = useState(null)
+  const [resetSent, setResetSent] = useState(false)
+  const [signUpSuccess, setSignUpSuccess] = useState(false)
 
   useEffect(() => {
     if (!loading && user) {
@@ -23,10 +32,87 @@ export default function Login() {
   // Check for an error passed back from the auth callback.
   const errorMsg = new URLSearchParams(window.location.search).get('error')
 
+  function switchMode(newMode) {
+    setMode(newMode)
+    setEmailError(null)
+    setResetSent(false)
+    setConfirmPassword('')
+  }
+
+  async function handleEmailSignIn(e) {
+    e.preventDefault()
+    setEmailError(null)
+    setEmailLoading(true)
+    const { error } = await signInWithEmail(email, password)
+    setEmailLoading(false)
+    if (error) {
+      setEmailError(error.message)
+    } else {
+      navigate('/challenges', { replace: true })
+    }
+  }
+
+  async function handleEmailSignUp(e) {
+    e.preventDefault()
+    setEmailError(null)
+    if (password !== confirmPassword) {
+      setEmailError('Passwords do not match.')
+      return
+    }
+    if (password.length < 6) {
+      setEmailError('Password must be at least 6 characters.')
+      return
+    }
+    setEmailLoading(true)
+    const { error } = await signUpWithEmail(email, password)
+    setEmailLoading(false)
+    if (error) {
+      setEmailError(error.message)
+    } else {
+      setSignUpSuccess(true)
+    }
+  }
+
+  async function handleForgotPassword() {
+    if (!email) {
+      setEmailError('Enter your email address above, then click "Forgot password?"')
+      return
+    }
+    setEmailError(null)
+    const { error } = await resetPassword(email)
+    if (error) {
+      setEmailError(error.message)
+    } else {
+      setResetSent(true)
+    }
+  }
+
   if (loading) {
     return (
       <div className={styles.spinnerPage}>
         <div className={styles.spinner} aria-label="Loading…" />
+      </div>
+    )
+  }
+
+  if (signUpSuccess) {
+    return (
+      <div className={styles.page}>
+        <div className={styles.card}>
+          <img src="/icons/homescreen_icon.png" alt="" className={styles.logo} aria-hidden="true" />
+          <h1 className={styles.coupleNames}>Neha &amp; Sean</h1>
+          <h2 className={styles.heading}>Check your email</h2>
+          <p className={styles.tagline}>
+            We sent a confirmation link to <strong>{email}</strong>. Click it to activate your account, then come back and sign in.
+          </p>
+          <button
+            className={styles.emailBtn}
+            type="button"
+            onClick={() => { setSignUpSuccess(false); switchMode('signin') }}
+          >
+            Back to sign in
+          </button>
+        </div>
       </div>
     )
   }
@@ -38,7 +124,7 @@ export default function Login() {
         <h1 className={styles.coupleNames}>Neha &amp; Sean</h1>
         <h2 className={styles.heading}>Wedding Challenges</h2>
         <p className={styles.tagline}>
-          Sign in to start completing challenges
+          {mode === 'signin' ? 'Sign in to start completing challenges' : 'Create an account to join the fun'}
         </p>
 
         {errorMsg && (
@@ -47,14 +133,105 @@ export default function Login() {
           </p>
         )}
 
-        <button
-          className={styles.googleBtn}
-          onClick={signInWithGoogle}
-          type="button"
+        {mode === 'signin' && (
+          <button
+            className={styles.googleBtn}
+            onClick={signInWithGoogle}
+            type="button"
+          >
+            <GoogleIcon />
+            Sign in with Google
+          </button>
+        )}
+
+        <div className={styles.divider}>
+          <span>or</span>
+        </div>
+
+        <form
+          className={styles.emailForm}
+          onSubmit={mode === 'signin' ? handleEmailSignIn : handleEmailSignUp}
+          noValidate
         >
-          <GoogleIcon />
-          Sign in with Google
-        </button>
+          <input
+            className={styles.input}
+            type="email"
+            placeholder="Email"
+            autoComplete="email"
+            value={email}
+            onChange={e => setEmail(e.target.value)}
+            required
+          />
+          <input
+            className={styles.input}
+            type="password"
+            placeholder="Password"
+            autoComplete={mode === 'signin' ? 'current-password' : 'new-password'}
+            value={password}
+            onChange={e => setPassword(e.target.value)}
+            required
+          />
+          {mode === 'signup' && (
+            <input
+              className={styles.input}
+              type="password"
+              placeholder="Confirm password"
+              autoComplete="new-password"
+              value={confirmPassword}
+              onChange={e => setConfirmPassword(e.target.value)}
+              required
+            />
+          )}
+          <button
+            className={styles.emailBtn}
+            type="submit"
+            disabled={emailLoading}
+          >
+            {emailLoading
+              ? (mode === 'signin' ? 'Signing in…' : 'Creating account…')
+              : (mode === 'signin' ? 'Sign in with Email' : 'Create Account')}
+          </button>
+        </form>
+
+        {emailError && (
+          <p className={styles.error} role="alert">
+            {emailError}
+          </p>
+        )}
+
+        {mode === 'signin' && (
+          resetSent ? (
+            <p className={styles.resetSuccess}>
+              Check your email for a reset link.
+            </p>
+          ) : (
+            <button
+              className={styles.forgotLink}
+              type="button"
+              onClick={handleForgotPassword}
+            >
+              Forgot password?
+            </button>
+          )
+        )}
+
+        <p className={styles.toggleRow}>
+          {mode === 'signin' ? (
+            <>
+              Don&apos;t have an account?{' '}
+              <button className={styles.toggleLink} type="button" onClick={() => switchMode('signup')}>
+                Sign up
+              </button>
+            </>
+          ) : (
+            <>
+              Already have an account?{' '}
+              <button className={styles.toggleLink} type="button" onClick={() => switchMode('signin')}>
+                Sign in
+              </button>
+            </>
+          )}
+        </p>
       </div>
     </div>
   )

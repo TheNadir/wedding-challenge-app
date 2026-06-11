@@ -10,6 +10,9 @@ import { supabase } from '../lib/supabase'
  *   user: User|null,
  *   loading: boolean,
  *   signInWithGoogle: () => Promise<void>,
+ *   signInWithEmail: (email: string, password: string) => Promise<{error: AuthError|null}>,
+ *   signUpWithEmail: (email: string, password: string) => Promise<{error: AuthError|null}>,
+ *   resetPassword: (email: string) => Promise<{error: AuthError|null}>,
  *   signOut: () => Promise<void>,
  * }}
  *
@@ -51,6 +54,23 @@ export function useAuth() {
     if (error) console.error('Google sign-in error:', error.message)
   }
 
+  async function signInWithEmail(email, password) {
+    const { error } = await supabase.auth.signInWithPassword({ email, password })
+    return { error }
+  }
+
+  async function signUpWithEmail(email, password) {
+    const { error } = await supabase.auth.signUp({ email, password })
+    return { error }
+  }
+
+  async function resetPassword(email) {
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: window.location.origin + '/auth/callback',
+    })
+    return { error }
+  }
+
   /** Sign out the current user and navigate back to the login page. */
   async function signOut() {
     await supabase.auth.signOut()
@@ -62,6 +82,9 @@ export function useAuth() {
     user: session?.user ?? null,
     loading,
     signInWithGoogle,
+    signInWithEmail,
+    signUpWithEmail,
+    resetPassword,
     signOut,
   }
 }
