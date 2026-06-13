@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { supabase } from '../lib/supabase'
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { supabase } from "../lib/supabase";
 
 /**
  * useAuth — tracks the current Supabase auth session and exposes auth actions.
@@ -22,59 +22,62 @@ import { supabase } from '../lib/supabase'
  * if (!user) return <Navigate to="/" />
  */
 export function useAuth() {
-  const [session, setSession] = useState(null)
-  const [loading, setLoading] = useState(true)
-  const navigate = useNavigate()
+  const [session, setSession] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
   useEffect(() => {
     // Grab the initial session from storage.
     supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session)
-      setLoading(false)
-    })
+      setSession(session);
+      setLoading(false);
+    });
 
     // Subscribe to future auth events (sign-in, sign-out, token refresh).
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session)
-    })
+      setSession(session);
+    });
 
-    return () => subscription.unsubscribe()
-  }, [])
+    return () => subscription.unsubscribe();
+  }, []);
 
   /** Kick off Google OAuth — browser will redirect away and come back via /auth/callback. */
   async function signInWithGoogle() {
     const { error } = await supabase.auth.signInWithOAuth({
-      provider: 'google',
+      provider: "google",
       options: {
-        redirectTo: window.location.origin + '/auth/callback',
+        redirectTo: window.location.origin + "/auth/callback",
       },
-    })
-    if (error) console.error('Google sign-in error:', error.message)
+    });
+    if (error) console.error("Google sign-in error:", error.message);
   }
 
   async function signInWithEmail(email, password) {
-    const { error } = await supabase.auth.signInWithPassword({ email, password })
-    return { error }
+    const { error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
+    return { error };
   }
 
   async function signUpWithEmail(email, password) {
-    const { error } = await supabase.auth.signUp({ email, password })
-    return { error }
+    const { error } = await supabase.auth.signUp({ email, password });
+    return { error };
   }
 
   async function resetPassword(email) {
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: window.location.origin + '/auth/callback',
-    })
-    return { error }
+      redirectTo: window.location.origin + "/auth/callback",
+    });
+    return { error };
   }
 
   /** Sign out the current user and navigate back to the login page. */
   async function signOut() {
-    await supabase.auth.signOut()
-    navigate('/', { replace: true })
+    await supabase.auth.signOut();
+    navigate("/", { replace: true });
   }
 
   return {
@@ -86,5 +89,5 @@ export function useAuth() {
     signUpWithEmail,
     resetPassword,
     signOut,
-  }
+  };
 }

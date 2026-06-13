@@ -1,6 +1,7 @@
 import { NavLink } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 import { useFeatureFlags } from "../context/FeatureFlagsContext";
+import { useIsAdmin } from "../hooks/useIsAdmin";
 import styles from "./NavBar.module.css";
 
 /**
@@ -12,6 +13,7 @@ import styles from "./NavBar.module.css";
 export default function NavBar() {
   const { user, signOut } = useAuth();
   const { flags } = useFeatureFlags();
+  const { isAdmin } = useIsAdmin(user);
 
   const avatarUrl = user?.user_metadata?.avatar_url;
   const displayName =
@@ -22,8 +24,6 @@ export default function NavBar() {
 
   // Show just the first name so it fits on mobile.
   const firstName = displayName.split(" ")[0];
-
-  console.log("flags ==>", flags);
 
   return (
     <header className={styles.header}>
@@ -51,6 +51,16 @@ export default function NavBar() {
             }
           >
             Disposable Camera
+          </NavLink>
+        )}
+        {isAdmin && (
+          <NavLink
+            to="/admin"
+            className={({ isActive }) =>
+              [styles.navLink, isActive ? styles.navLinkActive : ""].join(" ")
+            }
+          >
+            Admin
           </NavLink>
         )}
       </nav>
