@@ -53,6 +53,14 @@ export default function NavBar() {
             Disposable Camera
           </NavLink>
         )}
+        <NavLink
+          to="/leaderboard"
+          className={({ isActive }) =>
+            [styles.navLink, isActive ? styles.navLinkActive : ''].join(' ')
+          }
+        >
+          Leaderboard
+        </NavLink>
         {isAdmin && (
           <NavLink
             to="/admin"

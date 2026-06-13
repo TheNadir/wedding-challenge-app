@@ -7,6 +7,7 @@ import AuthCallback from './pages/AuthCallback'
 import Challenges from './pages/Challenges'
 import Upload from './pages/Upload'
 import CameraRoll from './pages/CameraRoll'
+import Leaderboard from './pages/Leaderboard'
 import Admin from './pages/Admin'
 
 export default function App() {
@@ -40,6 +41,14 @@ export default function App() {
           element={
             <ProtectedRoute>
               <CameraRoll />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/leaderboard"
+          element={
+            <ProtectedRoute>
+              <Leaderboard />
             </ProtectedRoute>
           }
         />
